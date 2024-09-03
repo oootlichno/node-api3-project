@@ -27,23 +27,19 @@ router.get('/:id', validateUserId, (req, res) => {
  res.json(req.user)
 });
 
+
+
 router.post('/', validateUser, (req, res, next) => {
-  // RETURN THE NEWLY CREATED USER OBJECT
-  // this needs a middleware to check that the request body is valid
-  User.insert({name: req.name})
-  .then(newUser => {
-    throw new Error ('oh no!')
-    res.status(201).json(newUser)
-  })
-  .catch(err => {
-    next(err)
-  })
+  User.insert({ name: req.name })
+    .then(newUser => {
+      res.status(201).json(newUser);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 router.put('/:id', validateUserId, validateUser, (req, res, next) => {
-  // RETURN THE FRESHLY UPDATED USER OBJECT
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
   User.update(req.params.id, {name: req.name})
   .then(rowsChanged => {
     return User.getById(req.params.id)
@@ -79,12 +75,18 @@ res.json(result)
   }
 });
 
-router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
-  console.log(req.user)
-  console.log(req.text)
+router.post('/:id/posts', validateUserId, validatePost, async (req, res, next) => {
+  try{
+const result = await Post.insert({
+  user_id: req.params.id,
+  text: req.text,
+})
+res.status(201).json(result)
+  }
+  catch(err){
+    next(err)
+  }
+
 });
 
 router.use((err, req, res, next) => {
